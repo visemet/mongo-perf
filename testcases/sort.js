@@ -3,10 +3,14 @@ if (typeof tests !== "object") {
 }
 
 (function() {
+    /**
+     * Inserts 10,000 documents into the collection, each ~500KB in size.
+     */
     function insertAscOrder(coll) {
         coll.drop();
-        for (var i = 0; i < 10000; i++) {
-            coll.insert({a: i});
+        var bigString = new Array(500 * 1024).toString();
+        for ( var i = 0; i < 100; i++ ) {
+            coll.insert({a : bigString});
         }
         coll.getDB().getLastError();
     }
