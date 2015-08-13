@@ -22,7 +22,7 @@ if (typeof tests !== "object") {
         ops: [
             {
                 op: 'find',
-                query: {orderBy: {a: 1}},
+                query: {query: {}, orderBy: {a: 1}},
             },
         ],
     });
@@ -38,7 +38,7 @@ if (typeof tests !== "object") {
         ops: [
             {
                 op: 'find',
-                query: {orderBy: {a: -1}},
+                query: {query: {}, orderBy: {a: -1}},
             },
         ],
     });
