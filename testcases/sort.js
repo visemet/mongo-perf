@@ -42,5 +42,39 @@ if (typeof tests !== "object") {
             },
         ],
     });
+
+    /*
+     * Setup: Create a collection of documents that are inserted in ascending order.
+     * Test: Query for all documents and sort them in ascending order.
+     */
+    tests.push({
+        name: 'Sort.InsertionOrderWithLimit',
+        tags: ['sort'],
+        pre: insertAscOrder,
+        ops: [
+            {
+                op: 'find',
+                query: {query: {}, orderBy: {a: 1}},
+                limit: 100,
+            },
+        ],
+    });
+
+    /*
+     * Setup: Create a collection of documents that are inserted in ascending order.
+     * Test: Query for all documents and sort them in descending order.
+     */
+    tests.push({
+        name: 'Sort.ReverseInsertionOrderWithLimit',
+        tags: ['sort'],
+        pre: insertAscOrder,
+        ops: [
+            {
+                op: 'find',
+                query: {query: {}, orderBy: {a: -1}},
+                limit: 100,
+            },
+        ],
+    });
 })();
 
