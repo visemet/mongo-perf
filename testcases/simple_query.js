@@ -382,3 +382,21 @@ tests.push( { name: "Queries.LargeDocs",
               ops: [
                   { op: "find", query: {} }
               ] } );
+
+/*
+ * Setup: Insert 100 documents into the collection, each ~5MB in size.
+ * Test: Do a table scan that matches none of the documents.
+ */
+tests.push( { name: "Queries.LargeDocsNoMatch",
+              tags: ['query'],
+              pre: function( collection ) {
+                  collection.drop();
+                  var bigString = new Array(5 * 1024 * 1024).toString();
+                  for ( var i = 0; i < 100; i++ ) {
+                      collection.insert( { x : bigString } );
+                  }
+                  collection.getDB().getLastError();
+              },
+              ops: [
+                  { op: "find", query: { y : { $exists: true } } }
+              ] } );
