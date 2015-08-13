@@ -45,7 +45,7 @@ if (typeof tests !== "object") {
 
     /*
      * Setup: Create a collection of documents that are inserted in ascending order.
-     * Test: Query for all documents and sort them in ascending order.
+     * Test: Query for all documents and sort them in ascending order, but limit the result size.
      */
     tests.push({
         name: 'Sort.InsertionOrderWithLimit',
@@ -62,7 +62,7 @@ if (typeof tests !== "object") {
 
     /*
      * Setup: Create a collection of documents that are inserted in ascending order.
-     * Test: Query for all documents and sort them in descending order.
+     * Test: Query for all documents and sort them in descending order, but limit the result size.
      */
     tests.push({
         name: 'Sort.ReverseInsertionOrderWithLimit',
@@ -79,7 +79,8 @@ if (typeof tests !== "object") {
 
     /*
      * Setup: Create a collection of documents that are inserted in ascending order.
-     * Test: Query for all documents and sort them in ascending order.
+     * Test: Query for all documents and sort them in ascending order, but limit the result to a
+     * single document.
      */
     tests.push({
         name: 'Sort.InsertionOrderLimitOne',
@@ -96,7 +97,8 @@ if (typeof tests !== "object") {
 
     /*
      * Setup: Create a collection of documents that are inserted in ascending order.
-     * Test: Query for all documents and sort them in descending order.
+     * Test: Query for all documents and sort them in descending order, but limit the result to a
+     * single document.
      */
     tests.push({
         name: 'Sort.ReverseInsertionOrderLimitOne',
@@ -111,4 +113,3 @@ if (typeof tests !== "object") {
         ],
     });
 })();
-
