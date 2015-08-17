@@ -9,8 +9,8 @@ if (typeof tests !== "object") {
     function insertAscOrder(coll) {
         coll.drop();
         var bigString = new Array(500 * 1024).toString();
-        for ( var i = 0; i < 100; i++ ) {
-            coll.insert({a : bigString});
+        for ( var i = 0; i < 50; i++ ) {
+            coll.insert({a : i, str : bigString});
         }
         coll.getDB().getLastError();
     }
