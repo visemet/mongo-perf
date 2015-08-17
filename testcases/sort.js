@@ -59,7 +59,7 @@ if (typeof tests !== "object") {
             {
                 op: 'find',
                 query: {query: {}, orderBy: {a: 1}},
-                limit: 10,
+                limit: -10,
             },
         ],
     });
@@ -76,7 +76,7 @@ if (typeof tests !== "object") {
             {
                 op: 'find',
                 query: {query: {}, orderBy: {a: -1}},
-                limit: 10,
+                limit: -10,
             },
         ],
     });
@@ -94,7 +94,7 @@ if (typeof tests !== "object") {
             {
                 op: 'find',
                 query: {query: {}, orderBy: {a: 1}},
-                limit: 1,
+                limit: -1,
             },
         ],
     });
@@ -112,7 +112,7 @@ if (typeof tests !== "object") {
             {
                 op: 'find',
                 query: {query: {}, orderBy: {a: -1}},
-                limit: 1,
+                limit: -1,
             },
         ],
     });
