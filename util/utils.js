@@ -209,8 +209,12 @@ function CommandTracer(testName) {
         basename = basename.replace(/_+/g, "_");
         basename = basename.toLowerCase();
 
-        const filename = "./mongoebench/" + basename + ".json";
-        removeFile(filename);
+        var filename = "./mongoebench/" + basename + ".json";
+        var fileExisted = removeFile(filename);
+
+        var prefix = fileExisted ? "Regenerating" : "Generating";
+        print(prefix + " config file for " + testName + " as " + filename);
+
         writeFile(filename, config);
     }
 }
