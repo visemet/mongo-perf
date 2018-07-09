@@ -177,7 +177,7 @@ function CommandTracer(testName) {
         // Some test cases cannot be written out as a JSON file because they insert very large
         // documents that when combined together into an array of operations exceeds the maximum
         // BSON document size limit.
-        var config = tojson({pre: pre, ops: ops});
+        var config = tojsononeline({pre: pre, ops: ops});
         try {
             Object.bsonsize({_: config});
         } catch (e) {
