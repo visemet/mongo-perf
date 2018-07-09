@@ -183,18 +183,23 @@ function CommandTracer(testName) {
             // possibility of being more readable for humans. The 16MB document size limit applies
             // to arguments of JavaScript functions implemented in C++ (because they are converted
             // to BSON) so all the additional whitespace can unnecessarily put us over the limit.
-            config = tojson({pre: pre, ops: ops});
-            Object.bsonsize({_: config});
-        } catch (e) {
+            //
+            // We also call Object.bsonsize() on the JavaScript object itself to see if we shouldn't
+            // spend any time serializing it to JSON because the resulting BSON document would be
+            // over the 16MB size limit.
+            Object.bsonsize({pre: pre, ops: ops});
+
             try {
-                config = tojsononeline({pre: pre, ops: ops});
+                config = tojson({pre: pre, ops: ops});
                 Object.bsonsize({_: config});
             } catch (e) {
-                print("Skipping " + testName + " because it results in a config file larger than" +
-                      " 16MB and therefore cannot be deserialized as a single BSON document: " +
-                      e.message);
-                return;
+                config = tojsononeline({pre: pre, ops: ops});
+                Object.bsonsize({_: config});
             }
+        } catch (e) {
+            print("Skipping " + testName + " because it results in a config file larger than 16MB" +
+                  " and therefore cannot be deserialized as a single BSON document: " + e.message);
+            return;
         }
 
         // We convert the test name from its upper camel case form to a snake case form by making a
