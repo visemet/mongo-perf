@@ -134,21 +134,43 @@ function CommandTracer() {
     this.beginPre = function beginPre() {
         assertState(State.init);
         state = State.runningPre;
+
+        Mongo.prototype.runCommand = function runCommandSpy(dbName, commandObj) {
+            pre.push({op: command, ns: dbName, command: commandObj});
+            return {ok: 1};
+        };
     };
 
     this.beginOps = function beginOps() {
         assertState(State.runningPre);
         state = State.runningOps;
+
+        Mongo.prototype.runCommand = mongoRunCommandOriginal;
+        benchRun = function benchRunSpy(benchArgs) {
+            ops = benchArgs.ops;
+            return {"totalOps/s": 0};
+        }
     };
 
     this.beginPost = function beginPost() {
         assertState(State.runningOps);
         state = State.runningPost;
+
+        benchRun = benchRunOriginal;
+        Mongo.prototype.runCommand = function runCommandSpy(dbName, commandObj) {
+            post.push({op: command, ns: dbName, command: commandObj});
+            return {ok: 1};
+        };
     };
 
     this.done = function done() {
         assertState(State.runningOps);
         state = State.done;
+
+        Mongo.prototype.runCommand = mongoRunCommandOriginal;
+        pre = post.concat(pre);
+
+        print("@@@ " + tojson({pre: pre, ops: ops}));
     }
 }
 
@@ -160,6 +182,9 @@ function runTest(test, thread, multidb, multicoll, runSeconds, shard, crudOption
     if (typeof printArgs === "undefined") printArgs = false;
 
     var collections = [];
+
+    var tracer = new CommandTracer();
+    tracer.beginPre();
 
     for (var i = 0; i < multidb; i++) {
         var sibling_db = db.getSiblingDB('test' + i);
@@ -242,6 +267,8 @@ function runTest(test, thread, multidb, multicoll, runSeconds, shard, crudOption
         }
     }
 
+    tracer.beginOps();
+
     // build a json document with arguments.
     // these will become a BSONObj when we pass
     // control to the built-in mongo shell function, benchRun()
@@ -285,6 +312,8 @@ function runTest(test, thread, multidb, multicoll, runSeconds, shard, crudOption
         error_string = "There were errors: " + result["errCount"];
     print("\t" + thread + "\t" + total + "\t" + error_string);
 
+    tracer.beginPost();
+
     if ("post" in test) {
         for (var i = 0; i < multidb; i++) {
             for (var j = 0; j < multicoll; j++) {
@@ -292,6 +321,8 @@ function runTest(test, thread, multidb, multicoll, runSeconds, shard, crudOption
             }
         }
     }
+
+    tracer.done();
 
     // drop all the collections created by this case
     for (var i = 0; i < multidb; i++) {
