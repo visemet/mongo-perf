@@ -174,6 +174,8 @@ function CommandTracer(testName) {
         // contents of the pre() function.
         pre = post.concat(pre);
 
+        // We convert the test name from its upper camel case form to a snake case form by making a
+        // similar set of substitutions to what https://stackoverflow.com/a/1176023 describes.
         var basename = testName.replace(/\./g, "_");
         basename = basename.replace(/(.)([A-Z][a-z]+)/g, function(match, p1, p2) {
             return p1 + "_" + p2;
@@ -183,8 +185,6 @@ function CommandTracer(testName) {
         });
         basename = basename.replace(/_+/g, "_");
         basename = basename.toLowerCase();
-
-        print("@@@ " + basename);
 
         const filename = "./mongoebench/" + basename + ".json";
         removeFile(filename);
