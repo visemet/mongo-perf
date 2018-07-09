@@ -190,10 +190,10 @@ function CommandTracer(testName) {
             Object.bsonsize({pre: pre, ops: ops});
 
             try {
-                config = tojson({pre: pre, ops: ops});
+                config = tojson({pre: pre, ops: ops}) + "\n";
                 Object.bsonsize({_: config});
             } catch (e) {
-                config = tojsononeline({pre: pre, ops: ops});
+                config = tojsononeline({pre: pre, ops: ops}) + "\n";
                 Object.bsonsize({_: config});
             }
         } catch (e) {
