@@ -174,6 +174,18 @@ function CommandTracer(testName) {
         // contents of the pre() function.
         pre = post.concat(pre);
 
+        // Some test cases cannot be written out as a JSON file because they insert very large
+        // documents that when combined together into an array of operations exceeds the maximum
+        // BSON document size limit.
+        var config = tojson({pre: pre, ops: ops});
+        try {
+            Object.bsonsize({_: config});
+        } catch (e) {
+            print("Skipping " + testName + " because it results in a config file larger than 16MB" +
+                  " and therefore cannot be deserialized as a single BSON document: " + e.message);
+            return;
+        }
+
         // We convert the test name from its upper camel case form to a snake case form by making a
         // similar set of substitutions to what https://stackoverflow.com/a/1176023 describes.
         var basename = testName.replace(/\./g, "_");
@@ -188,7 +200,7 @@ function CommandTracer(testName) {
 
         const filename = "./mongoebench/" + basename + ".json";
         removeFile(filename);
-        writeFile(filename, tojson({pre: pre, ops: ops}));
+        writeFile(filename, config);
     }
 }
 
