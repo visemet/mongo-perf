@@ -108,6 +108,44 @@ function checkForDroppedCollectionsTestDBs(db, multidb){
     }
 }
 
+function CommandTracer() {
+    const State = {
+        init: "init",
+        runningPre: "running pre() function",
+        runningOps: "running benchRun ops",
+        runningPost: "running post() function",
+        done: "done",
+    };
+
+    let state = State.init;
+
+    function assertState(expectedState) {
+        if (state !== expectedState) {
+            throw new Error("Expected state to be '" + expectedState + "' but was '" + state + "'");
+        }
+    }
+
+    this.beginPre = function beginPre() {
+        assertState(State.init);
+        state = State.runningPre;
+    };
+
+    this.beginOps = function beginOps() {
+        assertState(State.runningPre);
+        state = State.runningOps;
+    };
+
+    this.beginPost = function beginPost() {
+        assertState(State.runningOps);
+        state = State.runningPost;
+    };
+
+    this.done = function done() {
+        assertState(State.runningOps);
+        state = State.done;
+    }
+}
+
 function runTest(test, thread, multidb, multicoll, runSeconds, shard, crudOptions, printArgs, username, password) {
 
     if (typeof crudOptions === "undefined") crudOptions = getDefaultCrudOptions();
