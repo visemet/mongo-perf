@@ -109,7 +109,7 @@ function checkForDroppedCollectionsTestDBs(db, multidb){
 }
 
 function CommandTracer() {
-    const State = {
+    var State = {
         init: "init",
         runningPre: "running pre() function",
         runningOps: "running benchRun ops",
@@ -117,7 +117,13 @@ function CommandTracer() {
         done: "done",
     };
 
-    let state = State.init;
+    var mongoRunCommandOriginal = Mongo.prototype.runCommand;
+    var benchRunOriginal = benchRun;
+
+    var pre = [];
+    var ops;
+    var post = [];
+    var state = State.init;
 
     function assertState(expectedState) {
         if (state !== expectedState) {
