@@ -136,7 +136,7 @@ function CommandTracer() {
         state = State.runningPre;
 
         Mongo.prototype.runCommand = function runCommandSpy(dbName, commandObj) {
-            pre.push({op: command, ns: dbName, command: commandObj});
+            pre.push({op: "command", ns: dbName, command: commandObj});
             return {ok: 1};
         };
     };
@@ -148,7 +148,7 @@ function CommandTracer() {
         Mongo.prototype.runCommand = mongoRunCommandOriginal;
         benchRun = function benchRunSpy(benchArgs) {
             ops = benchArgs.ops;
-            return {"totalOps/s": 0};
+            return {"totalOps/s": 0, errCount: NumberLong(0)};
         }
     };
 
@@ -158,13 +158,13 @@ function CommandTracer() {
 
         benchRun = benchRunOriginal;
         Mongo.prototype.runCommand = function runCommandSpy(dbName, commandObj) {
-            post.push({op: command, ns: dbName, command: commandObj});
+            post.push({op: "command", ns: dbName, command: commandObj});
             return {ok: 1};
         };
     };
 
     this.done = function done() {
-        assertState(State.runningOps);
+        assertState(State.runningPost);
         state = State.done;
 
         Mongo.prototype.runCommand = mongoRunCommandOriginal;
