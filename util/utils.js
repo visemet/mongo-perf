@@ -108,7 +108,7 @@ function checkForDroppedCollectionsTestDBs(db, multidb){
     }
 }
 
-function CommandTracer() {
+function CommandTracer(testName) {
     var State = {
         init: "init",
         runningPre: "running pre() function",
@@ -135,7 +135,7 @@ function CommandTracer() {
         assertState(State.init);
         state = State.runningPre;
 
-        Mongo.prototype.runCommand = function runCommandSpy(dbName, commandObj) {
+        Mongo.prototype.runCommand = function runCommandSpy(dbName, commandObj, options) {
             pre.push({op: "command", ns: dbName, command: commandObj});
             return {ok: 1};
         };
@@ -157,7 +157,7 @@ function CommandTracer() {
         state = State.runningPost;
 
         benchRun = benchRunOriginal;
-        Mongo.prototype.runCommand = function runCommandSpy(dbName, commandObj) {
+        Mongo.prototype.runCommand = function runCommandSpy(dbName, commandObj, options) {
             post.push({op: "command", ns: dbName, command: commandObj});
             return {ok: 1};
         };
@@ -168,9 +168,27 @@ function CommandTracer() {
         state = State.done;
 
         Mongo.prototype.runCommand = mongoRunCommandOriginal;
+
+        // The contents of the post() function are really things we'd want to run before the test
+        // case. It's possible that we'll end up duplicating the cleanup by putting them before the
+        // contents of the pre() function.
         pre = post.concat(pre);
 
-        print("@@@ " + tojson({pre: pre, ops: ops}));
+        var basename = testName.replace(/\./g, "_");
+        basename = basename.replace(/(.)([A-Z][a-z]+)/g, function(match, p1, p2) {
+            return p1 + "_" + p2;
+        });
+        basename = basename.replace(/([a-z0-9])([A-Z])/g, function (match, p1, p2) {
+            return p1 + "_" + p2;
+        });
+        basename = basename.replace(/_+/g, "_");
+        basename = basename.toLowerCase();
+
+        print("@@@ " + basename);
+
+        const filename = "./mongoebench/" + basename + ".json";
+        removeFile(filename);
+        writeFile(filename, tojson({pre: pre, ops: ops}));
     }
 }
 
@@ -183,7 +201,7 @@ function runTest(test, thread, multidb, multicoll, runSeconds, shard, crudOption
 
     var collections = [];
 
-    var tracer = new CommandTracer();
+    var tracer = new CommandTracer(test.name);
     tracer.beginPre();
 
     for (var i = 0; i < multidb; i++) {
