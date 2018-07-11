@@ -108,6 +108,20 @@ function checkForDroppedCollectionsTestDBs(db, multidb){
     }
 }
 
+/**
+ * A utility for capturing the arguments to the Mongo.prototype.runCommand() and benchRun()
+ * functions and writing them as a JSON config file that can later be run by the mongoebench binary.
+ *
+ * It expects to have its methods called in the following order:
+ *
+ *   beginPre() --> beginOps() --> beginPost() --> done()
+ *
+ * @param {string} testName - The name of the test case to run. The test case's name is
+ *                            automatically converted into the basename of the JSON config file.
+ *
+ * @param {Object} options
+ * @param {string} options.directory - The directory of where to save the JSON config file.
+ */
 function CommandTracer(testName, options) {
     var State = {
         init: "init",
@@ -135,6 +149,7 @@ function CommandTracer(testName, options) {
         assertState(State.init);
         state = State.runningPre;
 
+        // We skip sending the command to the server to speed up generating the JSON config files.
         Mongo.prototype.runCommand = function runCommandSpy(dbName, commandObj, options) {
             pre.push({op: "command", ns: dbName, command: commandObj});
             return {ok: 1};
@@ -146,6 +161,8 @@ function CommandTracer(testName, options) {
         state = State.runningOps;
 
         Mongo.prototype.runCommand = mongoRunCommandOriginal;
+
+        // We skip running the workload to speed up generating the JSON config files.
         benchRun = function benchRunSpy(benchArgs) {
             ops = benchArgs.ops;
             return {"totalOps/s": 0, errCount: NumberLong(0)};
@@ -157,6 +174,8 @@ function CommandTracer(testName, options) {
         state = State.runningPost;
 
         benchRun = benchRunOriginal;
+
+        // We skip sending the command to the server to speed up generating the JSON config files.
         Mongo.prototype.runCommand = function runCommandSpy(dbName, commandObj, options) {
             post.push({op: "command", ns: dbName, command: commandObj});
             return {ok: 1};
@@ -237,6 +256,7 @@ function runTest(test, thread, multidb, multicoll, runSeconds, shard, crudOption
     var realTracer = new CommandTracer(test.name, mongoeBenchOptions);
     var fakeTracer = {};
     Object.keys(realTracer).forEach(function(methodName) {
+        // We copy all the properties defined on 'realTracer' as no-op functions.
         fakeTracer[methodName] = Function.prototype;
     });
 
